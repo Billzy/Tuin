@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Virtual Park Walk-through</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.min.css" />
+    <style>
+        body, html {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+        }
+        #map {
+            height: 100%;
+            width: 100%;
+        }
+        .info-panel {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            z-index: 1000;
+            background: white;
+            padding: 10px;
+            border-radius: 5px;
+            max-width: 300px;
+            max-height: 400px;
+            overflow-y: auto;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        .info-panel img {
+            max-width: 100%;
+            height: auto;
+            margin-top: 10px;
+        }
+        .custom-icon {
+            background-color: #4CAF50;
+            border-radius: 50%;
+            border: 2px solid #ffffff;
+        }
+    </style>
+</head>
+<body>
+    <div id="map"></div>
+    <div id="info" class="info-panel"></div>
+
+    <script>
+        // Configuration
+        const parkCenter = [40.7812, -73.9665]; // Central Park, NY as an example
+        const zoomLevel = 15;
+        
+        // Points of Interest
+        const pointsOfInterest = [
+            {
+                name: "Bethesda Fountain",
+                location: [40.7735, -73.9708],
+                description: "Bethesda Fountain is one of Central Park's most famous and beloved attractions.",
+                image: "https://via.placeholder.com/300x200.png?text=Bethesda+Fountain"
+            },
+            {
+                name: "Belvedere Castle",
+                location: [40.7794, -73.9690],
+                description: "Belvedere Castle offers some of the best and highest views of Central Park.",
+                image: "https://via.placeholder.com/300x200.png?text=Belvedere+Castle"
+            },
+            // Add more points of interest here
+        ];
+
+        // Initialize map
+        const map = L.map('map').setView(parkCenter, zoomLevel);
+
+        // Add Stamen Toner tile layer
+        L.tileLayer('https://stamen-tiles-{s}.a.ssl.fastly.net/toner/{z}/{x}/{y}{r}.png', {
+            attribution: 'Map tiles by <a href="http://stamen.com">Stamen Design</a>, <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a> &mdash; Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+            subdomains: 'abcd',
+            minZoom: 0,
+            maxZoom: 20
+        }).addTo(map);
+
+        // Custom icon for markers
+        const customIcon = L.divIcon({
+            className: 'custom-icon',
+            iconSize: [20, 20],
+            iconAnchor: [10, 10]
+        });
+
+        // Add markers for points of interest
+        pointsOfInterest.forEach(poi => {
+            const marker = L.marker(poi.location, {icon: customIcon}).addTo(map);
+            marker.on('click', () => showInfo(poi));
+        });
+
+        // Show info when a marker is clicked
+        function showInfo(poi) {
+            const infoPanel = document.getElementById('info');
+            infoPanel.innerHTML = `
+                <h2>${poi.name}</h2>
+                <p>${poi.description}</p>
+                <img src="${poi.image}" alt="${poi.name}">
+            `;
+        }
+
+        // Geolocation
+        if ("geolocation" in navigator) {
+            navigator.geolocation.watchPosition(position => {
+                const { latitude, longitude } = position.coords;
+                L.marker([latitude, longitude]).addTo(map)
+                    .bindPopup('You are here')
+                    .openPopup();
+            });
+        }
+    </script>
+</body>
+</html>
